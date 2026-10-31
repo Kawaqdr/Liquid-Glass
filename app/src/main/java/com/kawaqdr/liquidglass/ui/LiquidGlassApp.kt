@@ -2,7 +2,7 @@ package com.kawaqdr.liquidglass.ui
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.animation.AnimatedContent
+import android.widget.ImageView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,11 +27,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Search
@@ -42,7 +40,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,10 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.ImageView
 import com.kawaqdr.liquidglass.data.AppRepository
 import com.kawaqdr.liquidglass.data.LauncherApp
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -67,7 +62,6 @@ fun LiquidGlassApp() {
     var drawerOpen by remember { mutableStateOf(false) }
     var horizontalDrawer by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) { apps = repository.loadApps() }
 
@@ -83,12 +77,13 @@ fun LiquidGlassApp() {
                 bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             )
     ) {
-        // Wallpaper-like layered gradient behind the translucent surfaces.
-        Box(Modifier.fillMaxSize().background(
-            androidx.compose.ui.graphics.Brush.linearGradient(
-                listOf(Color(0xFF668DAA), Color(0xFF293D5A), Color(0xFF171D31))
+        Box(
+            Modifier.fillMaxSize().background(
+                androidx.compose.ui.graphics.Brush.linearGradient(
+                    listOf(Color(0xFF668DAA), Color(0xFF293D5A), Color(0xFF171D31))
+                )
             )
-        ))
+        )
 
         if (settingsOpen) {
             Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -109,12 +104,15 @@ fun LiquidGlassApp() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.height(22.dp))
-                Text("SATURDAY, OCTOBER 31", color = Color.White.copy(alpha = .8f), fontSize = 12.sp, letterSpacing = 2.sp)
+                Text("LIQUID GLASS", color = Color.White.copy(alpha = .8f), fontSize = 12.sp, letterSpacing = 2.sp)
                 Spacer(Modifier.height(8.dp))
-                Text("9:41", color = Color.White, fontSize = 76.sp, fontWeight = FontWeight.Light)
+                Text("Home", color = Color.White, fontSize = 52.sp, fontWeight = FontWeight.Light)
                 Spacer(Modifier.height(24.dp))
                 if (drawerOpen) {
-                    Row(Modifier.fillMaxWidth().glassSurface().padding(horizontal = 16.dp, vertical = 13.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.fillMaxWidth().glassSurface().padding(horizontal = 16.dp, vertical = 13.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(Icons.Default.Search, null, tint = Color.White)
                         Spacer(Modifier.width(10.dp))
                         BasicTextField(
@@ -133,8 +131,7 @@ fun LiquidGlassApp() {
                     Spacer(Modifier.height(16.dp))
                     if (horizontalDrawer) {
                         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
-                            val pageApps = visibleApps.drop(page * 24).take(24)
-                            AppGrid(pageApps, repository)
+                            AppGrid(visibleApps.drop(page * 24).take(24), repository)
                         }
                     } else {
                         AppGrid(visibleApps, repository, modifier = Modifier.weight(1f))
@@ -151,7 +148,10 @@ fun LiquidGlassApp() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     DockAction("Home", Icons.Default.Apps) { drawerOpen = false; query = "" }
-                    DockAction(if (drawerOpen) "Close" else "Apps", Icons.Default.Search) { drawerOpen = !drawerOpen; query = "" }
+                    DockAction(if (drawerOpen) "Close" else "Apps", Icons.Default.Search) {
+                        drawerOpen = !drawerOpen
+                        query = ""
+                    }
                     DockAction("Settings", Icons.Default.Settings) { settingsOpen = true; drawerOpen = false }
                 }
                 Spacer(Modifier.height(12.dp))
@@ -188,19 +188,18 @@ private fun AppGrid(
                     modifier = Modifier.size(54.dp)
                 )
                 Spacer(Modifier.height(7.dp))
-                Text(
-                    app.label,
-                    color = Color.White,
-                    fontSize = 11.sp,
-                    maxLines = 1
-                )
+                Text(app.label, color = Color.White, fontSize = 11.sp, maxLines = 1)
             }
         }
     }
 }
 
 @Composable
-private fun DockAction(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+private fun DockAction(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 4.dp)
