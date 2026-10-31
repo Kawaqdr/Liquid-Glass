@@ -2,5 +2,4 @@
     <path android:fillColor="#DDF4FF" android:pathData="M54,13 C77,13 95,31 95,54 C95,77 77,95 54,95 C31,95 13,77 13,54 C13,31 31,13 54,13 Z" />
     <path android:fillColor="#173D68" android:pathData="M54,22 C72,22 86,36 86,54 C86,72 72,86 54,86 C36,86 22,72 22,54 C22,36 36,22 54,22 Z" />
     <path android:fillColor="#F4FBFF" android:pathData="M45,37 C45,34 48,32 51,34 L72,49 C76,52 76,56 72,59 L51,74 C48,76 45,74 45,71 Z" />
-    <path android:fillColor="#66BFFF" android:pathData="M27,20 L81,20 L88,27 L20,88 L20,27 Z" android:fillAlpha="0.14" />
 </vector>
