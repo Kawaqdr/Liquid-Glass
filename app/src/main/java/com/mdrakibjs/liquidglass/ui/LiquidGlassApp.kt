@@ -356,33 +356,30 @@ private fun HomeAppIcon(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DockBar(apps: List<LauncherApp>, repository: AppRepository, onRemove: (LauncherApp) -> Unit) {
+    if (apps.isEmpty()) return
     Row(
         Modifier.fillMaxWidth()
-            .clip(RoundedCornerShape(29.dp))
-            .background(Color(0x3DFFFFFF))
-            .border(1.dp, Color.White.copy(alpha = .32f), RoundedCornerShape(29.dp))
-            .padding(horizontal = 7.dp, vertical = 8.dp),
+            .clip(RoundedCornerShape(27.dp))
+            .background(Color(0x4DFFFFFF))
+            .border(1.dp, Color.White.copy(alpha = .28f), RoundedCornerShape(27.dp))
+            .padding(horizontal = 9.dp, vertical = 9.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        apps.forEach { app ->
+        apps.take(DOCK_LIMIT).forEach { app ->
             AndroidView(
                 factory = { viewContext ->
                     ImageView(viewContext).apply {
                         scaleType = ImageView.ScaleType.FIT_CENTER
                         setImageDrawable(viewContext.packageManager.getApplicationIcon(app.packageName))
-            } },
-                modifier = Modifier.size(51.dp).clip(RoundedCornerShape(13.dp))
+                    }
+                },
+                modifier = Modifier.size(53.dp).clip(RoundedCornerShape(15.dp))
                     .combinedClickable(onClick = { repository.launch(app) }, onLongClick = { onRemove(app) })
             )
-        }
-        repeat((DOCK_LIMIT - apps.size).coerceAtLeast(0)) {
-            Box(Modifier.size(51.dp).clip(RoundedCornerShape(13.dp))
-                .background(Color.White.copy(alpha = .12f)), contentAlignment = Alignment.Center) {
-                Text("+", color = Color.White.copy(alpha = .55f), fontSize = 21.sp)
-            }
         }
     }
 }
