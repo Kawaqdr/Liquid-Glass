@@ -146,9 +146,10 @@ fun LiquidGlassApp() {
                     onDragStart = { offset -> startY = offset.y; dragDistance = 0f },
                     onVerticalDrag = { _, amount -> dragDistance += amount },
                     onDragEnd = {
-                        if (!drawerOpen && !settingsOpen && !controlCenterOpen) {
-                            if (dragDistance < -55f) { drawerOpen = true; query = "" }
-                            else if (dragDistance > 55f && startY < size.height * 0.42f) controlCenterOpen = true
+                        if (!drawerOpen && !settingsOpen) {
+                            if (controlCenterOpen && dragDistance < -55f) controlCenterOpen = false
+                            else if (!controlCenterOpen && dragDistance < -55f) { drawerOpen = true; query = "" }
+                            else if (!controlCenterOpen && dragDistance > 55f && startY < size.height * 0.42f) controlCenterOpen = true
                         }
                         dragDistance = 0f
                     }
