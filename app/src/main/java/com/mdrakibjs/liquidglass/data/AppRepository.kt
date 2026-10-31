@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AppRepository(private val context: Context) {
     private val packageManager: PackageManager = context.packageManager
 
-    fun loadApps(): List<LauncherApp> {
+    suspend fun loadApps(): List<LauncherApp> = withContext(Dispatchers.IO) {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         val resolved = if (Build.VERSION.SDK_INT >= 33) {
             packageManager.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(0))
