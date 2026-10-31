@@ -18,7 +18,7 @@ class AppRepository(private val context: Context) {
             @Suppress("DEPRECATION")
             packageManager.queryIntentActivities(intent, 0)
         }
-        return resolved.mapNotNull { info ->
+        resolved.mapNotNull { info ->
             val activity = info.activityInfo ?: return@mapNotNull null
             LauncherApp(
                 packageName = activity.packageName,
