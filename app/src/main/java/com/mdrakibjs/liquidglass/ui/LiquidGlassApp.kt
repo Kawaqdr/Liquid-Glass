@@ -271,25 +271,29 @@ fun LiquidGlassApp() {
         ) {
             Column(
                 Modifier.fillMaxSize()
-                    .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-                    .background(Color(0xE8172235))
-                    .border(1.dp, Color.White.copy(alpha = .20f), RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-                    .padding(start = 18.dp, end = 18.dp, top = 12.dp, bottom = 12.dp)
+                    .background(Color(0xF50B1424))
+                    .padding(
+                        start = 20.dp,
+                        end = 20.dp,
+                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 12.dp,
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 12.dp
+                    )
+
             ) {
                 Box(Modifier.align(Alignment.CenterHorizontally).size(width = 34.dp, height = 4.dp)
                     .clip(CircleShape).background(Color.White.copy(alpha = .45f)))
-                Row(Modifier.fillMaxWidth().padding(top = 17.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(top = 25.dp, bottom = 5.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("App Library", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.SemiBold)
-                        Text("${dockApps.size} of 5 dock spaces used", color = Color.White.copy(alpha = .58f), fontSize = 11.sp)
+                        Text("App Library", color = Color.White, fontSize = 27.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Search and open your apps", color = Color.White.copy(alpha = .62f), fontSize = 12.sp)
                     }
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White,
                         modifier = Modifier.clip(CircleShape).clickable { drawerOpen = false; query = "" }.padding(9.dp))
                 }
                 Row(
-                    Modifier.fillMaxWidth().padding(top = 16.dp)
-                        .clip(RoundedCornerShape(17.dp))
-                        .background(Color.White.copy(alpha = .13f))
+                    Modifier.fillMaxWidth().padding(top = 17.dp, bottom = 8.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color(0xFF202C40))
                         .padding(horizontal = 13.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -305,17 +309,16 @@ fun LiquidGlassApp() {
                 }
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
-                    modifier = Modifier.weight(1f).padding(top = 10.dp),
-                    contentPadding = PaddingValues(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(17.dp)
+                    modifier = Modifier.weight(1f).padding(top = 8.dp),
+                    contentPadding = PaddingValues(top = 10.dp, bottom = 18.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(22.dp)
                 ) {
                     items(filteredApps, key = { it.packageName }) { app ->
                         HomeAppIcon(app = app, onClick = { repository.launch(app) }, onLongPress = { toggleDock(app) }, compact = true,
                             pinned = app.packageName in dockPackages)
                     }
                 }
-                DockBar(apps = dockApps, repository = repository, onRemove = { toggleDock(it) })
             }
         }
  
