@@ -16,17 +16,21 @@ fun Modifier.glassSurface(
     .clip(shape)
     .background(
         Brush.linearGradient(
-            listOf(
-                Color.White.copy(alpha = 0.20f),
-                tint,
-                Color.White.copy(alpha = 0.055f)
+            colorStops = arrayOf(
+                0f to Color.White.copy(alpha = 0.19f),
+                0.42f to tint.copy(alpha = 0.72f),
+                1f to Color.White.copy(alpha = 0.045f)
             )
         )
     )
     .border(
         width = 1.dp,
         brush = Brush.linearGradient(
-            listOf(Color.White.copy(alpha = 0.48f), Color.White.copy(alpha = 0.08f))
+            colorStops = arrayOf(
+                0f to Color.White.copy(alpha = 0.52f),
+                0.48f to Color.White.copy(alpha = 0.15f),
+                1f to Color.White.copy(alpha = 0.055f)
+            )
         ),
         shape = shape
     )
