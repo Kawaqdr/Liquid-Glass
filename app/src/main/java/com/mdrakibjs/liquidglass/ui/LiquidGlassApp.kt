@@ -181,7 +181,7 @@ fun LiquidGlassApp() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 rowApps.forEach { app ->
-                                    HomeAppIcon(app = app, onLongPress = { toggleDock(app) })
+                                    HomeAppIcon(app = app, onClick = { repository.launch(app) }, onLongPress = { toggleDock(app) })
                                 }
                                 repeat(4 - rowApps.size) { Spacer(Modifier.width(76.dp)) }
                             }
@@ -210,7 +210,7 @@ fun LiquidGlassApp() {
                     Spacer(Modifier.height(30.dp))
                 }
 
-                DockBar(apps = dockApps, onRemove = { toggleDock(it) })
+                DockBar(apps = dockApps, repository = repository, onRemove = { toggleDock(it) })
                 Spacer(Modifier.height(12.dp))
                 Box(
                     Modifier
@@ -277,19 +277,15 @@ fun LiquidGlassApp() {
                     verticalArrangement = Arrangement.spacedBy(17.dp)
                 ) {
                     items(filteredApps, key = { it.packageName }) { app ->
-                        HomeAppIcon(app = app, onLongPress = { toggleDock(app) }, compact = true,
+                        HomeAppIcon(app = app, onClick = { repository.launch(app) }, onLongPress = { toggleDock(app) }, compact = true,
                             pinned = app.packageName in dockPackages)
                     }
                 }
                 DockBar(apps = dockApps, onRemove = { toggleDock(it) })
             }
         }
+ 
 
-        if (drawerOpen) {
-            Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = .26f)).clickable {
-                drawerOpen = false; query = ""
-            })
-        }
     }
 }
 
@@ -297,16 +293,14 @@ fun LiquidGlassApp() {
 @Composable
 private fun HomeAppIcon(
     app: LauncherApp,
+    onClick: () -> Unit,
     onLongPress: () -> Unit,
     compact: Boolean = false,
     pinned: Boolean = false
 ) {
     Column(
         modifier = Modifier.width(if (compact) 76.dp else 76.dp)
-            .combinedClickable(onClick = {
-                // Launch is handled by the package/activity pair, not by a label lookup.
-                val context = androidx.compose.ui.platform.LocalContext.current
-            }, onLongClick = onLongPress),
+            .combinedClickable(onClick = onClick, onLongClick = onLongPress),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AndroidView(
@@ -326,7 +320,7 @@ private fun HomeAppIcon(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DockBar(apps: List<LauncherApp>, onRemove: (LauncherApp) -> Unit) {
+private fun DockBar(apps: List<LauncherApp>, repository: AppRepository, onRemove: (LauncherApp) -> Unit) {
     Row(
         Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(29.dp))
@@ -344,10 +338,7 @@ private fun DockBar(apps: List<LauncherApp>, onRemove: (LauncherApp) -> Unit) {
                         setImageDrawable(viewContext.packageManager.getApplicationIcon(app.packageName))
             } },
                 modifier = Modifier.size(51.dp).clip(RoundedCornerShape(13.dp))
-                    .combinedClickable(onClick = {
-                        val launchIntent = appLaunchIntent(app.packageName, app.activityName)
-                        launchIntent?.let { view -> view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-                    }, onLongClick = { onRemove(app) })
+                    .combinedClickable(onClick = { repository.launch(app) }, onLongClick = { onRemove(app) })
             )
         }
         repeat((DOCK_LIMIT - apps.size).coerceAtLeast(0)) {
@@ -358,10 +349,6 @@ private fun DockBar(apps: List<LauncherApp>, onRemove: (LauncherApp) -> Unit) {
         }
     }
 }
-
-private fun appLaunchIntent(packageName: String, activityName: String): Intent? =
-    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        .setClassName(packageName, activityName)
 
 @Composable
 private fun SettingRow(title: String, value: String, onClick: () -> Unit) {
