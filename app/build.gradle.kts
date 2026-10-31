@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.kawaqdr.liquidglass"
+    namespace = "com.mdrakibjs.liquidglass"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kawaqdr.liquidglass"
+        applicationId = "com.mdrakibjs.liquidglass"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
