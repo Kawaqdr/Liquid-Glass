@@ -281,7 +281,7 @@ fun LiquidGlassApp() {
                             pinned = app.packageName in dockPackages)
                     }
                 }
-                DockBar(apps = dockApps, onRemove = { toggleDock(it) })
+                DockBar(apps = dockApps, repository = repository, onRemove = { toggleDock(it) })
             }
         }
  
