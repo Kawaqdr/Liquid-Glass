@@ -11,6 +11,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -174,9 +175,9 @@ fun LiquidGlassApp() {
                 Text("Make your space yours", color = Color.White.copy(alpha = .65f), fontSize = 14.sp)
                 Spacer(Modifier.height(8.dp))
                 GlassSettingRow("Refresh installed apps", "Refresh") {
-                    apps = repository.loadApps()
-                    dockPackages = dockPackages.filter { pkg -> apps.any { it.packageName == pkg } }
-                    persistDock(dockPackages)
+                    val refreshed = repository.loadApps()
+                    apps = refreshed
+                    persistDock(dockPackages.filter { pkg -> refreshed.any { it.packageName == pkg } })
                 }
                 GlassSettingRow("Manage Dock", "${dockPackages.size}/5 apps") {
                     settingsOpen = false
