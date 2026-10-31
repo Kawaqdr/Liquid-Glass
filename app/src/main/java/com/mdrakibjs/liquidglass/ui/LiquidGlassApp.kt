@@ -37,7 +37,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -266,7 +266,7 @@ fun LiquidGlassApp() {
                     Spacer(Modifier.width(10.dp))
                     Text("Search your apps", color = Color.White.copy(alpha = .75f), fontSize = 14.sp)
                     Spacer(Modifier.weight(1f))
-                    Icon(Icons.Default.Apps, contentDescription = "App library", tint = Color.White.copy(alpha = .75f), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Menu, contentDescription = "App library", tint = Color.White.copy(alpha = .75f), modifier = Modifier.size(18.dp))
                 }
                 Spacer(Modifier.height(13.dp))
                 LiquidDock(
