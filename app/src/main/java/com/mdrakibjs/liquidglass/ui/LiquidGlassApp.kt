@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,7 +22,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mdrakibjs.liquidglass.data.AppRepository
 import com.mdrakibjs.liquidglass.data.LauncherApp
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -74,12 +76,17 @@ private const val PREF_DOCK_APPS = "dock_packages"
 fun LiquidGlassApp() {
     val context = LocalContext.current
     val repository = remember { AppRepository(context) }
+    val scope = rememberCoroutineScope()
     val preferences = remember { context.getSharedPreferences(PREFS_NAME, 0) }
     var apps by remember { mutableStateOf(emptyList<LauncherApp>()) }
     var dockPackages by remember { mutableStateOf<List<String>>(emptyList()) }
     var query by remember { mutableStateOf("") }
     var drawerOpen by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = drawerOpen || settingsOpen) {
+        if (drawerOpen) { drawerOpen = false; query = "" } else settingsOpen = false
+    }
 
     LaunchedEffect(Unit) {
         val loaded = repository.loadApps()
@@ -175,9 +182,11 @@ fun LiquidGlassApp() {
                 Text("Make your space yours", color = Color.White.copy(alpha = .65f), fontSize = 14.sp)
                 Spacer(Modifier.height(8.dp))
                 GlassSettingRow("Refresh installed apps", "Refresh") {
-                    val refreshed = repository.loadApps()
-                    apps = refreshed
-                    persistDock(dockPackages.filter { pkg -> refreshed.any { it.packageName == pkg } })
+                    scope.launch {
+                        val refreshed = repository.loadApps()
+                        apps = refreshed
+                        persistDock(dockPackages.filter { pkg -> refreshed.any { it.packageName == pkg } })
+                    }
                 }
                 GlassSettingRow("Manage Dock", "${dockPackages.size}/5 apps") {
                     settingsOpen = false
