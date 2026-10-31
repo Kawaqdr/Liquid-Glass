@@ -1,6 +1,5 @@
 package com.mdrakibjs.liquidglass.ui
 
-import android.app.WallpaperManager
 import android.content.Intent
 import android.provider.Settings
 import android.widget.ImageView
@@ -17,6 +16,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,10 +86,15 @@ fun LiquidGlassApp() {
     var dockPackages by remember { mutableStateOf<List<String>>(emptyList()) }
     var drawerOpen by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var controlCenterOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
 
-    BackHandler(enabled = drawerOpen || settingsOpen) {
-        if (drawerOpen) { drawerOpen = false; query = "" } else settingsOpen = false
+    BackHandler(enabled = drawerOpen || settingsOpen || controlCenterOpen) {
+        when {
+            controlCenterOpen -> controlCenterOpen = false
+            drawerOpen -> { drawerOpen = false; query = "" }
+            else -> settingsOpen = false
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -131,10 +136,24 @@ fun LiquidGlassApp() {
             factory = { viewContext ->
                 ImageView(viewContext).apply {
                     scaleType = ImageView.ScaleType.CENTER_CROP
-                    try { setImageDrawable(WallpaperManager.getInstance(viewContext).drawable) }
-                    catch (_: Exception) { setBackgroundColor(android.graphics.Color.rgb(8, 16, 31)) }
-        } },
-            modifier = Modifier.fillMaxSize()
+                    setImageResource(com.mdrakibjs.liquidglass.R.drawable.launcher_wallpaper)
+                }
+            },
+            modifier = Modifier.fillMaxSize().pointerInput(drawerOpen, controlCenterOpen, settingsOpen) {
+                var startY = 0f
+                var dragDistance = 0f
+                detectVerticalDragGestures(
+                    onDragStart = { offset -> startY = offset.y; dragDistance = 0f },
+                    onVerticalDrag = { _, amount -> dragDistance += amount },
+                    onDragEnd = {
+                        if (!drawerOpen && !settingsOpen && !controlCenterOpen) {
+                            if (dragDistance < -55f) { drawerOpen = true; query = "" }
+                            else if (dragDistance > 55f && startY < size.height * 0.42f) controlCenterOpen = true
+                        }
+                        dragDistance = 0f
+                    }
+                )
+            }
         )
         Box(Modifier.fillMaxSize().background(Color(0x18030A18)))
 
@@ -227,6 +246,21 @@ fun LiquidGlassApp() {
                         }
                 )
             }
+        }
+
+        AnimatedVisibility(
+            visible = controlCenterOpen && !drawerOpen && !settingsOpen,
+            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth().fillMaxHeight(.72f),
+            enter = fadeIn() + slideInVertically { -it },
+            exit = fadeOut() + slideOutVertically { -it }
+        ) {
+            ControlCenterPanel(
+                onClose = { controlCenterOpen = false },
+                onOpenSetting = { action ->
+                    controlCenterOpen = false
+                    runCatching { context.startActivity(Intent(action)) }
+                }
+            )
         }
 
         AnimatedVisibility(
@@ -359,5 +393,64 @@ private fun SettingRow(title: String, value: String, onClick: () -> Unit) {
     ) {
         Text(title, color = Color.White, fontWeight = FontWeight.Medium)
         Text(value, color = Color.White.copy(alpha = .68f), fontSize = 12.sp)
+    }
+}
+
+
+@Composable
+private fun ControlCenterPanel(
+    onClose: () -> Unit,
+    onOpenSetting: (String) -> Unit
+) {
+    Column(
+        Modifier.fillMaxSize()
+            .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xF32A3548), Color(0xE80C1729))))
+            .border(1.dp, Color.White.copy(alpha = .25f), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
+            .padding(horizontal = 20.dp, vertical = 17.dp),
+        verticalArrangement = Arrangement.spacedBy(13.dp)
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                Text("Control Center", color = Color.White, fontSize = 23.sp, fontWeight = FontWeight.SemiBold)
+                Text("Quick settings", color = Color.White.copy(alpha = .62f), fontSize = 11.sp)
+            }
+            Text("DONE", color = Color(0xFFC8E8FF), fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.clip(CircleShape).clickable(onClick = onClose).padding(horizontal = 13.dp, vertical = 9.dp))
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            ControlTile("Wi-Fi", "Network", Modifier.weight(1f)) { onOpenSetting(Settings.ACTION_WIFI_SETTINGS) }
+            ControlTile("Bluetooth", "Devices", Modifier.weight(1f)) { onOpenSetting(Settings.ACTION_BLUETOOTH_SETTINGS) }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            ControlTile("Display", "Brightness", Modifier.weight(1f)) { onOpenSetting(Settings.ACTION_DISPLAY_SETTINGS) }
+            ControlTile("Sound", "Volume", Modifier.weight(1f)) { onOpenSetting(Settings.ACTION_SOUND_SETTINGS) }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            ControlTile("Battery", "Power", Modifier.weight(1f)) { onOpenSetting(Settings.ACTION_BATTERY_SAVER_SETTINGS) }
+            ControlTile("Settings", "System", Modifier.weight(1f)) { onOpenSetting(Settings.ACTION_SETTINGS) }
+        }
+        Spacer(Modifier.weight(1f))
+        Text("Swipe up to close", color = Color.White.copy(alpha = .52f), fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+    }
+}
+
+@Composable
+private fun ControlTile(
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier.clip(RoundedCornerShape(20.dp))
+            .background(Color.White.copy(alpha = .12f))
+            .border(1.dp, Color.White.copy(alpha = .13f), RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 15.dp, vertical = 13.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(subtitle, color = Color.White.copy(alpha = .58f), fontSize = 10.sp)
     }
 }
