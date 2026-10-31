@@ -265,7 +265,7 @@ fun LiquidGlassApp() {
 
         AnimatedVisibility(
             visible = drawerOpen && !settingsOpen,
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.88f),
+            modifier = Modifier.fillMaxSize(),
             enter = fadeIn() + slideInVertically { it },
             exit = fadeOut() + slideOutVertically { it }
         ) {
@@ -355,7 +355,6 @@ private fun HomeAppIcon(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DockBar(apps: List<LauncherApp>, repository: AppRepository, onRemove: (LauncherApp) -> Unit) {
